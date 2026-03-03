@@ -24,6 +24,7 @@ export default function FormSidebar({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
 
@@ -46,9 +47,13 @@ export default function FormSidebar({
     return "₹0";
   };
 
-  const templateCost = parseInt(getPrice().replace(/[^0-9]/g, "")) || 0;
-  const gst = Math.round(templateCost * 0.18);
-  const subtotal = templateCost + gst;
+  const templateCostPerDay = parseInt(getPrice().replace(/[^0-9]/g, "")) || 0;
+  const daysCount = selectedDates && selectedDates.length > 0 ? selectedDates.length : 0;
+  const daysCharge = daysCount * templateCostPerDay;
+  const featuredCharge = isFeatured ? 100 : 0;
+  const subtotal = daysCharge + featuredCharge;
+  const gst = Math.round(subtotal * 0.18);
+  const total = subtotal + gst;
 
   const handlePostAd = async () => {
     setSubmitError("");
@@ -259,13 +264,37 @@ export default function FormSidebar({
           Promotion & Pricing
         </h4>
 
+        {/* Featured Ad Checkbox */}
+        <div className="border border-yellow-200 bg-yellow-50 rounded-xl p-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="w-5 h-5 rounded border-gray-300 text-[#157A4F] cursor-pointer"
+            />
+            <div>
+              <p className="font-semibold text-gray-800 text-sm">Featured Ad</p>
+              <p className="text-xs text-gray-600">Boost visibility for ₹100 extra</p>
+            </div>
+          </label>
+        </div>
+
         <div className="space-y-3 text-sm">
 
-          {/* Template Cost */}
+          {/* Days Count */}
           <div className="flex justify-between">
-            <span>Template cost</span>
-            <span className="font-medium">₹{templateCost}</span>
+            <span>Days ({daysCount})</span>
+            <span className="font-medium">₹{daysCharge}</span>
           </div>
+
+          {/* Featured Charge */}
+          {isFeatured && (
+            <div className="flex justify-between">
+              <span>Featured Ad Charge</span>
+              <span className="font-medium">₹{featuredCharge}</span>
+            </div>
+          )}
 
           {/* GST */}
           <div className="flex justify-between">
@@ -277,10 +306,16 @@ export default function FormSidebar({
 
         {/* Subtotal */}
         <div className="border-t pt-4 flex justify-between font-semibold text-gray-800">
-          <span>Subtotal</span>
+          <span>Subtotal (Before GST)</span>
           <span className="text-[#157A4F]">
             ₹{subtotal}
           </span>
+        </div>
+
+        {/* Total */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex justify-between items-center">
+          <span className="font-bold text-gray-800">Total Amount</span>
+          <span className="font-bold text-2xl text-[#157A4F]">₹{total}</span>
         </div>
 
         {/* Error Message */}

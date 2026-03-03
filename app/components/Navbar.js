@@ -59,7 +59,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="theme-footer shadow-sm sticky top-0 z-50 border-b border-gray-200">
+    <header className="theme-footer shadow-sm sticky top-0 z-[9999] border-b border-gray-200">
       <div className="w-full px-8 h-16 flex items-center justify-between">
 
         {/* LOGO */}
@@ -215,7 +215,7 @@ export default function Navbar({
 
               {/* Profile Dropdown */}
               {showProfileMenu && (
-                <div className="absolute top-12 right-0 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                <div className="absolute top-12 right-0 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-[9999]">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
                     <p className="text-xs text-gray-500">{user?.email}</p>

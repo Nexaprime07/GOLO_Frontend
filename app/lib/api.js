@@ -2,7 +2,7 @@
 // Centralized API Layer — Choja Frontend → ads-microservice
 // ============================================================
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 // --------------- Core Fetch Wrapper ---------------
 
