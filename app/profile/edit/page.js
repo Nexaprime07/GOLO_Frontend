@@ -88,12 +88,35 @@ export default function EditProfilePage() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showMessage("error", "Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    // Validate phone length
+    if (formData.phone.trim().length < 10) {
+      showMessage("error", "Phone number must be at least 10 digits");
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('Updating profile with:', { 
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone 
+      });
+      
       const response = await updateProfile({
         name: formData.name,
         email: formData.email,
         profile: { phone: formData.phone },
       });
+
+      console.log('Update response:', response);
 
       if (response.success) {
         showMessage("success", "Profile updated successfully!");
@@ -102,7 +125,9 @@ export default function EditProfilePage() {
         showMessage("error", response.message || "Failed to update profile");
       }
     } catch (error) {
-      showMessage("error", error.data?.message || error.message || "Failed to update profile");
+      console.error('Profile update error:', error);
+      const errorMsg = error.data?.message || error.message || "Failed to update profile";
+      showMessage("error", errorMsg);
     } finally {
       setLoading(false);
     }
@@ -111,10 +136,21 @@ export default function EditProfilePage() {
   // PASSWORD SECTION
   const handleRequestOTP = async (e) => {
     e.preventDefault();
+    
+    // Ensure phone number is set
+    if (!formData.phone.trim() || formData.phone.trim().length < 10) {
+      showMessage("error", "Please save a valid phone number (at least 10 digits) in your profile first");
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
 
     try {
+      console.log('Requesting OTP...');
       const response = await sendPasswordChangeOTP();
+      console.log('OTP Response:', response);
+      
       if (response.success) {
         setOtpSent(true);
         setPasswordState((prev) => ({ ...prev, step: "verify" }));
@@ -124,7 +160,9 @@ export default function EditProfilePage() {
         showMessage("error", response.message || "Failed to send OTP");
       }
     } catch (error) {
-      showMessage("error", error.data?.message || error.message || "Failed to send OTP");
+      console.error('OTP Error Details:', error);
+      const errorMsg = error.data?.message || error.message || "Failed to send OTP. Please check if your phone number is set in your profile.";
+      showMessage("error", errorMsg);
     } finally {
       setLoading(false);
     }
