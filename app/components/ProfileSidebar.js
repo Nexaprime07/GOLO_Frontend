@@ -15,6 +15,15 @@ export default function ProfileSidebar() {
         : "text-gray-700 hover:bg-gray-100"
     }`;
 
+  const isTransactionsPath = pathname.startsWith("/profile/transactions");
+
+  const transactionLinkStyle =
+    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+      isTransactionsPath
+        ? "bg-[#FFF3D6] text-black font-semibold shadow-sm"
+        : "text-gray-700 hover:bg-gray-100"
+    }`;
+
   const handleLogout = () => {
     // Add logout logic here if needed (clear tokens, etc.)
     router.push("/register");
@@ -49,7 +58,7 @@ export default function ProfileSidebar() {
           <span>Wishlist</span>
         </Link>
 
-        <Link href="/profile/transactions" className={linkStyle("/profile/transactions")}>
+        <Link href="/profile/transactions" className={transactionLinkStyle}>
           <span className="text-lg">🧾</span>
           <span>Transactions</span>
         </Link>

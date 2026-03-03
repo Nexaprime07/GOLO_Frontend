@@ -1,33 +1,8 @@
+import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ProfileSidebar from '../../components/ProfileSidebar';
-
-const transactions = [
-  {
-    id: 1,
-    adTitle: "Maths Tuition - Pune",
-    template: "Education",
-    details: "3 days, Featured Ad",
-    amount: "₹45",
-    date: "2026-03-01",
-  },
-  {
-    id: 2,
-    adTitle: "iPhone 14 Pro Sale",
-    template: "Electronics",
-    details: "5 days, Featured Ad",
-    amount: "₹118",
-    date: "2026-02-15",
-  },
-  {
-    id: 3,
-    adTitle: "Dog for Adoption",
-    template: "Pets",
-    details: "2 days, Regular Ad",
-    amount: "₹10",
-    date: "2026-01-28",
-  },
-];
+import { transactions } from './data';
 
 export default function TransactionHistory() {
   return (
@@ -49,13 +24,17 @@ export default function TransactionHistory() {
                 </tr>
               </thead>
               <tbody>
-                {transactions.map(tx => (
-                  <tr key={tx.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-4">{tx.adTitle}</td>
+                {transactions.map((tx) => (
+                  <tr key={tx.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <td className="py-2 px-4">
+                      <Link href={`/profile/transactions/${tx.id}`} className="block text-[#157A4F] font-semibold hover:underline">
+                        {tx.adTitle}
+                      </Link>
+                    </td>
                     <td className="py-2 px-4">{tx.template}</td>
-                    <td className="py-2 px-4">{tx.details}</td>
-                    <td className="py-2 px-4 font-bold text-green-700">{tx.amount}</td>
-                    <td className="py-2 px-4">{tx.date}</td>
+                    <td className="py-2 px-4">{tx.placement}</td>
+                    <td className="py-2 px-4 font-bold text-green-700">₹{tx.totalPaid.toFixed(2)}</td>
+                    <td className="py-2 px-4">{tx.paidOn}</td>
                   </tr>
                 ))}
               </tbody>
