@@ -1,6 +1,6 @@
-import Navbar from '../../../components/Navbar';
-import Footer from '../../../components/Footer';
-import ProfileSidebar from '../../../components/ProfileSidebar';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import ProfileSidebar from '../../components/ProfileSidebar';
 
 const transactions = [
   {
