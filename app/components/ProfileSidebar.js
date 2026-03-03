@@ -49,6 +49,11 @@ export default function ProfileSidebar() {
           <span>Wishlist</span>
         </Link>
 
+        <Link href="/profile/transactions" className={linkStyle("/profile/transactions")}>
+          <span className="text-lg">🧾</span>
+          <span>Transactions</span>
+        </Link>
+
         {/* Divider */}
         <div className="border-t border-gray-200 my-4"></div>
 
