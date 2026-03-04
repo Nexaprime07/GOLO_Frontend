@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { createAd } from "../lib/api";
 
 export default function FormSidebar({
   adTitleState,
@@ -196,16 +195,25 @@ export default function FormSidebar({
         adData[categoryKey] = categoryDetails;
       }
 
-      const response = await createAd(adData);
-
-      if (response.success) {
-        setSubmitSuccess(true);
-        setTimeout(() => {
-          router.push("/my-ads");
-        }, 2000);
-      } else {
-        setSubmitError(response.message || "Failed to post ad. Please try again.");
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(
+          'pendingAdPost',
+          JSON.stringify({
+            adData,
+            payment: {
+              amount: total,
+              subtotal,
+              gst,
+              featured: isFeatured,
+              daysCount,
+              templateId: templateId || 1,
+            },
+            createdAt: Date.now(),
+          })
+        );
       }
+
+      router.push('/post-ad/payment');
     } catch (error) {
       const status = error.status || error.data?.statusCode;
       // Token expired — clear session and redirect to login
@@ -376,7 +384,7 @@ export default function FormSidebar({
           disabled={isSubmitting || submitSuccess}
           className="w-full bg-[#157A4F] text-white py-3 rounded-xl hover:bg-[#0f5c3a] transition shadow-md font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Posting..." : submitSuccess ? "✓ Posted!" : "Review & Post Ad"}
+          {isSubmitting ? "Preparing..." : submitSuccess ? "✓ Posted!" : "Review & Post Ad"}
         </button>
 
         <button className="w-full border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition font-medium">

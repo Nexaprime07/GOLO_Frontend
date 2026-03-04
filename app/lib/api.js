@@ -264,3 +264,144 @@ export async function promoteAd(adId, { promotionPackage, duration }) {
         body: JSON.stringify({ package: promotionPackage, duration }),
     });
 }
+
+// ============================================================
+// PAYMENTS APIs
+// ============================================================
+
+export async function createPaymentOrder(payload) {
+    return apiClient('/payments/create-order', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function verifyPayment(payload) {
+    return apiClient('/payments/verify', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function markPaymentFailed(payload) {
+    return apiClient('/payments/fail', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function refundPayment(payload) {
+    return apiClient('/payments/refund', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function getMyPayments({ page = 1, limit = 10, status } = {}) {
+    const params = new URLSearchParams({ page, limit });
+    if (status) params.append('status', status);
+    return apiClient(`/payments/my?${params.toString()}`);
+}
+
+export async function getPaymentById(paymentId) {
+    return apiClient(`/payments/${paymentId}`);
+}
+
+function loadRazorpayScript() {
+    return new Promise((resolve) => {
+        if (typeof window === 'undefined') return resolve(false);
+        if (window.Razorpay) return resolve(true);
+
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+}
+
+export async function openRazorpayCheckout({ amount, adId, description, notes, prefill }) {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+    }
+
+    const orderResponse = await createPaymentOrder({
+        amount,
+        currency: 'INR',
+        adId,
+        description,
+        notes,
+        idempotencyKey: `pay_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    });
+
+    const orderData = orderResponse?.data;
+    const order = orderData?.order;
+    const keyId = orderData?.keyId;
+    const paymentRecord = orderData?.payment;
+
+    if (!order || !keyId) {
+        throw new Error('Invalid payment order response from server.');
+    }
+
+    return new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+            key: keyId,
+            amount: order.amount,
+            currency: order.currency,
+            name: 'GOLO',
+            description: description || 'GOLO Payment',
+            order_id: order.id,
+            prefill: prefill || {},
+            notes: notes || {},
+            theme: {
+                color: '#157A4F',
+            },
+            handler: async (response) => {
+                try {
+                    const verifyRes = await verifyPayment({
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpaySignature: response.razorpay_signature,
+                    });
+                    resolve({
+                        success: true,
+                        order,
+                        paymentRecord,
+                        verification: verifyRes?.data,
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            },
+            modal: {
+                ondismiss: async () => {
+                    try {
+                        await markPaymentFailed({
+                            razorpayOrderId: order.id,
+                            failureDescription: 'Checkout closed by user',
+                        });
+                    } catch {
+                    }
+                    reject(new Error('Payment checkout was cancelled.'));
+                },
+            },
+        });
+
+        razorpay.on('payment.failed', async function (response) {
+            try {
+                await markPaymentFailed({
+                    razorpayOrderId: order.id,
+                    razorpayPaymentId: response?.error?.metadata?.payment_id,
+                    failureCode: response?.error?.code,
+                    failureDescription: response?.error?.description,
+                });
+            } catch {
+            }
+            reject(new Error(response?.error?.description || 'Payment failed.'));
+        });
+
+        razorpay.open();
+    });
+}

@@ -464,12 +464,23 @@ export default function PostAdForm({
       case "Furniture":
         isComplete = isFilled(furnitureTypeInput) && isFilled(furnitureMaterial) && isFilled(furnitureCondition) && isFilled(furnitureSize) && isFilled(furniturePrice);
         if (isComplete) {
+          const allowedFurnitureTypes = [
+            'Sofa', 'Bed', 'Dining Table', 'Chair', 'Table', 'Wardrobe',
+            'Dressing Table', 'Bookshelf', 'Cabinet', 'Mattress', 'Other'
+          ];
+
+          const normalizedFurnitureType =
+            allowedFurnitureTypes.find(
+              (item) => item.toLowerCase() === String(furnitureTypeInput || '').trim().toLowerCase()
+            ) || 'Other';
+
           categoryData = {
-            furnitureType: furnitureTypeInput,
+            furnitureType: normalizedFurnitureType,
             material: furnitureMaterial,
             condition: furnitureCondition,
-            size: furnitureSize,
+            dimensions: furnitureSize,
             price: Number(furniturePrice),
+            negotiable: furnitureNegotiable,
           };
         }
         break;
