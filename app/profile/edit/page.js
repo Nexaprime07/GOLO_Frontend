@@ -11,6 +11,13 @@ export default function EditProfilePage() {
   const { user, isAuthenticated, loading: authLoading, refreshProfile } = useAuth();
   const router = useRouter();
 
+  const getMaskedEmail = (email) => {
+    if (!email || !email.includes("@")) return "your registered email";
+    const [localPart, domainPart] = email.split("@");
+    const firstChar = localPart?.[0] || "*";
+    return `${firstChar}***@${domainPart}`;
+  };
+
   // Tabs
   const [activeTab, setActiveTab] = useState("profile"); // profile or password
 
@@ -36,6 +43,7 @@ export default function EditProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   // Initialize form with user data
   useEffect(() => {
@@ -136,15 +144,9 @@ export default function EditProfilePage() {
   // PASSWORD SECTION
   const handleRequestOTP = async (e) => {
     e.preventDefault();
-    
-    // Ensure phone number is set
-    if (!formData.phone.trim() || formData.phone.trim().length < 10) {
-      showMessage("error", "Please save a valid phone number (at least 10 digits) in your profile first");
-      setLoading(false);
-      return;
-    }
-    
+
     setLoading(true);
+    setPasswordChanged(false);
 
     try {
       console.log('Requesting OTP...');
@@ -155,13 +157,13 @@ export default function EditProfilePage() {
         setOtpSent(true);
         setPasswordState((prev) => ({ ...prev, step: "verify" }));
         setTimerSeconds(300); // 5 minutes
-        showMessage("success", "OTP sent to your phone");
+        showMessage("success", `OTP sent to ${getMaskedEmail(formData.email || user?.email)}`);
       } else {
         showMessage("error", response.message || "Failed to send OTP");
       }
     } catch (error) {
       console.error('OTP Error Details:', error);
-      const errorMsg = error.data?.message || error.message || "Failed to send OTP. Please check if your phone number is set in your profile.";
+      const errorMsg = error.data?.message || error.message || "Failed to send OTP. Please check your registered email.";
       showMessage("error", errorMsg);
     } finally {
       setLoading(false);
@@ -215,6 +217,7 @@ export default function EditProfilePage() {
         passwordState.newPassword
       );
       if (response.success) {
+        setPasswordChanged(true);
         showMessage("success", "Password changed successfully!");
         // Reset password form
         setPasswordState({
@@ -375,8 +378,14 @@ export default function EditProfilePage() {
               {activeTab === "password" && (
                 <div className="space-y-6">
                   <p className="text-gray-600 text-sm">
-                    To change your password, we'll verify your identity by sending an OTP to your registered phone number.
+                    To change your password, we'll verify your identity by sending an OTP to your registered email address.
                   </p>
+
+                  {passwordChanged && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-700 font-semibold text-sm">
+                      ✓ Password updated successfully.
+                    </div>
+                  )}
 
                   {/* STEP 1: Request OTP */}
                   {passwordState.step === "request" && (
@@ -389,7 +398,7 @@ export default function EditProfilePage() {
                           <div className="flex-1">
                             <h3 className="font-semibold text-gray-900 mb-2">Request OTP</h3>
                             <p className="text-gray-700 text-sm mb-4">
-                              Click below to send a verification code to your phone.
+                              Click below to send a verification code to your email.
                             </p>
                             <button
                               type="button"
@@ -416,12 +425,18 @@ export default function EditProfilePage() {
                           <div className="flex-1 w-full">
                             <h3 className="font-semibold text-gray-900 mb-2">Verify OTP</h3>
                             <p className="text-gray-700 text-sm mb-4">
-                              Enter the 6-digit code sent to your phone.
+                              Enter the 6-digit code sent to your email.
                               <br />
                               <span className="text-[#157A4F] font-semibold">
                                 {Math.floor(timerSeconds / 60)}:{String(timerSeconds % 60).padStart(2, "0")}
                               </span>
                             </p>
+
+                            {otpSent && (
+                              <p className="text-xs text-gray-600 mb-3">
+                                OTP sent to <span className="font-semibold text-[#157A4F]">{getMaskedEmail(formData.email || user?.email)}</span>
+                              </p>
+                            )}
 
                             <input
                               type="text"

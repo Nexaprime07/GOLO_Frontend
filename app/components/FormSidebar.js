@@ -82,6 +82,26 @@ export default function FormSidebar({
     setIsReviewStarted(true);
 
     try {
+      const rawCategoryName = typeof selectedCategory === 'string'
+        ? selectedCategory
+        : (selectedCategory?.name || 'Other');
+
+      const categoryNameMap = {
+        Electronics: 'Electronics & Home appliances',
+      };
+
+      const normalizedCategory = categoryNameMap[rawCategoryName] || rawCategoryName;
+
+      const normalizePhone = (value) => {
+        const digits = String(value || '').replace(/\D/g, '');
+        if (!digits) return '';
+        if (digits.startsWith('91') && digits.length === 12) return `+${digits}`;
+        if (digits.length === 10) return `+91${digits}`;
+        return value;
+      };
+
+      const normalizedPhone = normalizePhone(primaryContact);
+
       // 1) First upload all files to Cloudinary
       const uploadedUrls = [];
       if (uploadedImages && uploadedImages.length > 0) {
@@ -115,19 +135,21 @@ export default function FormSidebar({
       const adData = {
         title: adTitleState.trim(),
         description: adDescriptionState.trim(),
-        category: typeof selectedCategory === 'string' ? selectedCategory : (selectedCategory?.name || "Other"),
-        subCategory: typeof selectedCategory === 'string' ? "General" : (selectedCategory?.subCategory || selectedCategory?.name || "General"),
+        category: normalizedCategory,
+        subCategory: typeof selectedCategory === 'string'
+          ? "General"
+          : (selectedCategory?.subCategory || rawCategoryName || "General"),
         // Swap out dummy logic with our permanently uploaded Cloudinary URLs
         images: uploadedUrls,
         price: parseFloat(mobilePrice || monthlyRent || "0") || 0,
         location: cities?.[0] || "India",
         city: cities?.[0] || "",
         cities: cities || [],
-        primaryContact: primaryContact || "",
+        primaryContact: normalizedPhone || "",
         userType: "Customer",
         contactInfo: {
           name: user?.name || "User", // Required by backend ContactInfoDto
-          phone: primaryContact || "",
+          phone: normalizedPhone || "",
           email: user?.email || "",
           preferredContactMethod: "phone"
         },
@@ -137,21 +159,39 @@ export default function FormSidebar({
       };
 
       // Add category-specific data
-      if (selectedCategory?.name === "Property" && propertyTypeRent) {
+      if (rawCategoryName === "Property" && propertyTypeRent) {
         adData.propertyData = { propertyType: propertyTypeRent, rent: monthlyRent };
       }
-      if (selectedCategory?.name === "Mobiles" && mobilePrice) {
+      if (rawCategoryName === "Mobiles" && mobilePrice) {
         adData.mobileData = { price: mobilePrice };
       }
 
       // Add any additional category details
       if (categoryDetails) {
-        let categoryKey = selectedCategory?.name?.toLowerCase() + "Data";
+        const categoryName = rawCategoryName;
+        const categoryKeyMap = {
+          Education: "educationData",
+          Matrimonial: "matrimonialData",
+          Vehicle: "vehicleData",
+          Business: "businessData",
+          Travel: "travelData",
+          Astrology: "astrologyData",
+          Property: "propertyData",
+          "Public Notice": "publicNoticeData",
+          "Lost & Found": "lostFoundData",
+          Service: "serviceData",
+          Personal: "personalData",
+          Employment: "employmentData",
+          Pets: "petsData",
+          Mobiles: "mobileData",
+          Electronics: "electronicsData",
+          "Electronics & Home appliances": "electronicsData",
+          Furniture: "furnitureData",
+          "Greetings & Tributes": "greetingsData",
+          Other: "otherData",
+        };
 
-        // Handle specific naming conventions from backend
-        if (selectedCategory?.name === "Public Notice") categoryKey = "publicNoticeData";
-        if (selectedCategory?.name === "Lost & Found") categoryKey = "lostAndFoundData";
-        if (selectedCategory?.name === "Greetings & Tributes") categoryKey = "greetingsData"; // Or tributes based on sub
+        const categoryKey = categoryKeyMap[categoryName] || (categoryName?.toLowerCase()?.replace(/\s*&\s*/g, "").replace(/\s+/g, "") + "Data");
 
         adData[categoryKey] = categoryDetails;
       }

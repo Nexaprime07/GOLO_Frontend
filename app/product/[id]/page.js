@@ -57,6 +57,26 @@ export default function ProductDetails({ params }) {
   const images = ad?.images?.length > 0 ? ad.images : fallbackImages;
   const isExternalImage = ad?.images?.length > 0;
 
+  const formatFieldLabel = (key) =>
+    key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (char) => char.toUpperCase())
+      .trim();
+
+  const stringifyValue = (value) => {
+    if (value === null || value === undefined || value === "") return "-";
+    if (Array.isArray(value)) return value.join(", ");
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
+
+  const categorySpecificEntries = ad?.categorySpecificData
+    ? Object.entries(ad.categorySpecificData).filter(
+      ([key, value]) => !["_id", "__v"].includes(key) && value !== null && value !== undefined && value !== ""
+    )
+    : [];
+
   if (loading) {
     return (
       <>
@@ -226,6 +246,24 @@ export default function ProductDetails({ params }) {
                   </div>
                 )}
               </div>
+
+              {/* Category Specific Details */}
+              {categorySpecificEntries.length > 0 && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
+                  <h2 className="font-semibold text-lg mb-4">
+                    {ad?.category || "Category"} Details
+                  </h2>
+
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {categorySpecificEntries.map(([key, value]) => (
+                      <div key={key} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                        <p className="text-xs text-gray-500 mb-1">{formatFieldLabel(key)}</p>
+                        <p className="text-sm font-medium text-gray-800 break-words">{stringifyValue(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
 

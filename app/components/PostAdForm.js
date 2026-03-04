@@ -233,7 +233,7 @@ export default function PostAdForm({
     { name: "Employment", icon: Briefcase },
     { name: "Pets", icon: PawPrint },
     { name: "Mobiles", icon: Smartphone },
-    { name: "Electronics", icon: Tv },
+    { name: "Electronics & Home appliances", icon: Tv },
     { name: "Furniture", icon: Sofa },
     { name: "Greetings & Tributes", icon: Gift, sub: ["Greetings", "Tributes"] },
     { name: "Other", icon: Package },
@@ -337,28 +337,84 @@ export default function PostAdForm({
         break;
       case "Business":
         isComplete = isFilled(businessType);
+        if (isComplete) {
+          categoryData = {
+            businessType,
+          };
+        }
         break;
       case "Travel":
         isComplete = isFilled(travelDate);
+        if (isComplete) {
+          categoryData = {
+            travelDate,
+          };
+        }
         break;
       case "Astrology":
         isComplete = isFilled(consultationMode);
+        if (isComplete) {
+          categoryData = {
+            consultationMode,
+          };
+        }
         break;
       case "Property":
         if (selectedSub === "Rent") isComplete = isFilled(propertyTypeRent) && isFilled(monthlyRent);
         else if (selectedSub === "Sell") isComplete = isFilled(propertyTypeSell) && isFilled(bhk);
+        if (isComplete) {
+          categoryData = selectedSub === "Rent"
+            ? { listingType: "Rent", propertyType: propertyTypeRent, rent: Number(monthlyRent) }
+            : { listingType: "Sell", propertyType: propertyTypeSell, bhk };
+        }
         break;
       case "Public Notice":
         isComplete = isFilled(noticeType) && isFilled(issuingAuthority) && isFilled(detailedNotice);
+        if (isComplete) {
+          categoryData = {
+            noticeType,
+            issuingAuthority,
+            detailedNotice,
+          };
+        }
         break;
       case "Lost & Found":
         isComplete = isFilled(lfStatus) && isFilled(itemType) && isFilled(itemName) && isFilled(lfLocation) && isFilled(lfDescription);
+        if (isComplete) {
+          categoryData = {
+            status: lfStatus,
+            itemType,
+            itemName,
+            location: lfLocation,
+            description: lfDescription,
+          };
+        }
         break;
       case "Service":
         isComplete = isFilled(serviceCategory) && isFilled(serviceExperience) && isFilled(charges) && isFilled(serviceArea) && isFilled(availableTime) && isFilled(serviceBio);
+        if (isComplete) {
+          categoryData = {
+            serviceCategory,
+            experience: serviceExperience,
+            charges,
+            serviceArea,
+            availableTime,
+            bio: serviceBio,
+          };
+        }
         break;
       case "Personal":
         isComplete = isFilled(personalName) && isFilled(personalAchievementTitle) && isFilled(personalAge) && isFilled(personalGender) && isFilled(personalDescription) && isFilled(personalContact);
+        if (isComplete) {
+          categoryData = {
+            name: personalName,
+            achievementTitle: personalAchievementTitle,
+            age: personalAge,
+            gender: personalGender,
+            description: personalDescription,
+            contact: personalContact,
+          };
+        }
         break;
       case "Employment":
         isComplete = isFilled(employmentType) && isFilled(employmentJobTitle) && isFilled(employmentCompanyName) && isFilled(employmentExperience) && isFilled(employmentSalaryRange) && isFilled(employmentIndustry) && isFilled(employmentJobDescription) && isFilled(employmentRequirements) && isFilled(employmentBenefits) && isFilled(employmentVacancies);
@@ -377,31 +433,88 @@ export default function PostAdForm({
         break;
       case "Pets":
         isComplete = isFilled(petSpecies) && isFilled(petBreed) && isFilled(petAge) && isFilled(petGender) && isFilled(petWeight);
+        if (isComplete) {
+          categoryData = {
+            species: petSpecies,
+            breed: petBreed,
+            age: petAge,
+            gender: petGender,
+            weight: petWeight,
+          };
+        }
         break;
       case "Mobiles":
         isComplete = isFilled(mobileBrand) && isFilled(mobileModel) && isFilled(mobileCondition) && isFilled(mobileWarranty) && isFilled(mobilePrice);
         if (isComplete) categoryData = { brand: mobileBrand, model: mobileModel, condition: mobileCondition, warranty: mobileWarranty, price: Number(mobilePrice), negotiable: mobileNegotiable };
         break;
       case "Electronics":
+      case "Electronics & Home appliances":
         isComplete = isFilled(electronicAppliance) && isFilled(electronicBrand) && isFilled(electronicModel) && isFilled(electronicCondition) && isFilled(electronicWarranty) && isFilled(electronicPrice);
+        if (isComplete) {
+          categoryData = {
+            applianceType: electronicAppliance,
+            brand: electronicBrand,
+            model: electronicModel,
+            condition: electronicCondition,
+            warranty: electronicWarranty,
+            price: Number(electronicPrice),
+          };
+        }
         break;
       case "Furniture":
         isComplete = isFilled(furnitureTypeInput) && isFilled(furnitureMaterial) && isFilled(furnitureCondition) && isFilled(furnitureSize) && isFilled(furniturePrice);
+        if (isComplete) {
+          categoryData = {
+            furnitureType: furnitureTypeInput,
+            material: furnitureMaterial,
+            condition: furnitureCondition,
+            size: furnitureSize,
+            price: Number(furniturePrice),
+          };
+        }
         break;
       case "Greetings & Tributes":
         if (selectedSub === "Greetings") {
           isComplete = isFilled(greetingPersonName) && isFilled(greetingAgeTurning) && isFilled(greetingBirthday) && isFilled(greetingMessage) && isFilled(greetingFromName) && isFilled(greetingRelationship);
+          if (isComplete) {
+            categoryData = {
+              tributeType: "Greetings",
+              personName: greetingPersonName,
+              ageTurning: greetingAgeTurning,
+              birthday: greetingBirthday,
+              message: greetingMessage,
+              fromName: greetingFromName,
+              relationship: greetingRelationship,
+            };
+          }
         } else if (selectedSub === "Tributes") {
           isComplete = isFilled(tributeFullName) && isFilled(tributeDateOfBirth) && isFilled(tributeAge) && isFilled(tributeBiography);
+          if (isComplete) {
+            categoryData = {
+              tributeType: "Tributes",
+              fullName: tributeFullName,
+              dateOfBirth: tributeDateOfBirth,
+              age: tributeAge,
+              biography: tributeBiography,
+              funeralDetails: tributeFuneralDetails || undefined,
+            };
+          }
         }
         break;
       case "Other":
         isComplete = isFilled(otherTitle) && isFilled(otherDescription);
+        if (isComplete) {
+          categoryData = {
+            title: otherTitle,
+            description: otherDescription,
+            price: otherPrice ? Number(otherPrice) : undefined,
+          };
+        }
         break;
     }
 
     // Only set categoryDetails to an object if it's complete, else false
-    onCategoryDetailsChange && onCategoryDetailsChange(isComplete ? (categoryData || true) : false);
+    onCategoryDetailsChange && onCategoryDetailsChange(isComplete ? (categoryData || {}) : false);
   };
 
   // Helper functions

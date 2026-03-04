@@ -20,13 +20,25 @@ export default function PopularPlaces() {
         const response = await getPopularPlaces(4);
         if (response.success && response.data?.length > 0) {
           setPlaces(
-            response.data.map((place) => ({
-              id: place._id,
-              img: place.image || place.img || "place1.jpg",
-              name: place.name || place.location,
-              description: place.description,
-              isFromApi: true,
-            }))
+            response.data.map((place, index) => {
+              if (typeof place === "string") {
+                return {
+                  id: `popular-${index}`,
+                  img: fallbackPlaces[index % fallbackPlaces.length].img,
+                  name: place,
+                  description: "Popular area based on recent listings.",
+                  isFromApi: false,
+                };
+              }
+
+              return {
+                id: place?._id || `popular-${index}`,
+                img: place?.image || place?.img || fallbackPlaces[index % fallbackPlaces.length].img,
+                name: place?.name || place?.location || `Popular Place ${index + 1}`,
+                description: place?.description || "A popular place based on recent listings.",
+                isFromApi: Boolean(place?.image || place?.img),
+              };
+            })
           );
         }
       } catch {
@@ -61,7 +73,7 @@ export default function PopularPlaces() {
                   src={place.isFromApi ? place.img : `/images/${place.img}`}
                   width={300}
                   height={200}
-                  alt={place.name}
+                  alt={place.name || "Popular place"}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   unoptimized={place.isFromApi}
                 />
