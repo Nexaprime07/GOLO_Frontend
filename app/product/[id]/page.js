@@ -62,19 +62,94 @@ export default function ProductDetails({ params }) {
   const formatFieldLabel = (key) =>
     key
       .replace(/([A-Z])/g, " $1")
+      .replace(/_/g, " ")
       .replace(/^./, (char) => char.toUpperCase())
       .trim();
 
   const stringifyValue = (value) => {
     if (value === null || value === undefined || value === "") return "-";
-    if (Array.isArray(value)) return value.join(", ");
+    if (Array.isArray(value)) {
+      if (value.length === 0) return "-";
+      return value
+        .map((item) => {
+          if (item === null || item === undefined) return "";
+          if (typeof item === "object") {
+            return Object.entries(item)
+              .map(([nestedKey, nestedValue]) => `${formatFieldLabel(nestedKey)}: ${stringifyValue(nestedValue)}`)
+              .join(" | ");
+          }
+          return stringifyValue(item);
+        })
+        .filter(Boolean)
+        .join(", ");
+    }
     if (typeof value === "boolean") return value ? "Yes" : "No";
-    if (typeof value === "object") return JSON.stringify(value);
+    if (value instanceof Date) {
+      return value.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    }
+    if (typeof value === "string") {
+      const isoDate = new Date(value);
+      if (!Number.isNaN(isoDate.getTime()) && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+        return isoDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+      }
+      return value;
+    }
+    if (typeof value === "object") {
+      return Object.entries(value)
+        .filter(([nestedKey]) => !["_id", "__v"].includes(nestedKey))
+        .map(([nestedKey, nestedValue]) => `${formatFieldLabel(nestedKey)}: ${stringifyValue(nestedValue)}`)
+        .join(" | ");
+    }
     return String(value);
   };
 
-  const categorySpecificEntries = ad?.categorySpecificData
-    ? Object.entries(ad.categorySpecificData).filter(
+  const basicInformationEntries = [
+    ["Title", ad?.title],
+    ["Description", ad?.description],
+    ["Category", ad?.category],
+    ["Sub Category", ad?.subCategory],
+    ["Price", ad?.price !== undefined && ad?.price !== null ? `₹${Number(ad.price).toLocaleString("en-IN")}` : "-"],
+    ["Negotiable", ad?.negotiable],
+    ["Primary Contact", ad?.primaryContact || ad?.contactInfo?.phone],
+    ["Contact Name", ad?.contactInfo?.name],
+    ["Contact Email", ad?.contactInfo?.email],
+    ["Contact WhatsApp", ad?.contactInfo?.whatsapp],
+    ["Preferred Contact Method", ad?.contactInfo?.preferredContactMethod],
+    ["Location", ad?.location],
+    ["City", ad?.city],
+    ["State", ad?.state],
+    ["Pincode", ad?.pincode],
+    ["All Cities", ad?.cities],
+    ["Language", ad?.language],
+    ["Template", ad?.templateId],
+    ["Selected Dates", ad?.selectedDates],
+    ["Tags", ad?.tags],
+  ];
+
+  const categoryDataSource =
+    ad?.categorySpecificData ||
+    ad?.educationData ||
+    ad?.matrimonialData ||
+    ad?.vehicleData ||
+    ad?.businessData ||
+    ad?.travelData ||
+    ad?.astrologyData ||
+    ad?.propertyData ||
+    ad?.publicNoticeData ||
+    ad?.lostFoundData ||
+    ad?.serviceData ||
+    ad?.personalData ||
+    ad?.employmentData ||
+    ad?.petsData ||
+    ad?.mobileData ||
+    ad?.electronicsData ||
+    ad?.furnitureData ||
+    ad?.greetingsData ||
+    ad?.otherData ||
+    null;
+
+  const categorySpecificEntries = categoryDataSource
+    ? Object.entries(categoryDataSource).filter(
       ([key, value]) => !["_id", "__v"].includes(key) && value !== null && value !== undefined && value !== ""
     )
     : [];
@@ -250,22 +325,38 @@ export default function ProductDetails({ params }) {
               </div>
 
               {/* Category Specific Details */}
-              {categorySpecificEntries.length > 0 && (
-                <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
-                  <h2 className="font-semibold text-lg mb-4">
-                    {ad?.category || "Category"} Details
-                  </h2>
+              <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
+                <h2 className="font-semibold text-lg mb-4">Basic Information</h2>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {basicInformationEntries.map(([label, value]) => (
+                    <div key={label} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                      <p className="text-xs text-gray-500 mb-1">{label}</p>
+                      <p className="text-sm font-medium text-gray-800 break-words">{stringifyValue(value)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {categorySpecificEntries.map(([key, value]) => (
+              <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
+                <h2 className="font-semibold text-lg mb-4">
+                  {ad?.category || "Category"} Details
+                </h2>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {categorySpecificEntries.length > 0 ? (
+                    categorySpecificEntries.map(([key, value]) => (
                       <div key={key} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
                         <p className="text-xs text-gray-500 mb-1">{formatFieldLabel(key)}</p>
                         <p className="text-sm font-medium text-gray-800 break-words">{stringifyValue(value)}</p>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100 sm:col-span-2">
+                      <p className="text-sm text-gray-600">No category details available.</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
             </div>
 

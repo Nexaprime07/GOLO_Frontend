@@ -136,9 +136,13 @@ export default function FormSidebar({
         title: adTitleState.trim(),
         description: adDescriptionState.trim(),
         category: normalizedCategory,
-        subCategory: typeof selectedCategory === 'string'
-          ? "General"
-          : (selectedCategory?.subCategory || rawCategoryName || "General"),
+        subCategory:
+          categoryDetails?.listingType ||
+          categoryDetails?.type ||
+          categoryDetails?.tributeType ||
+          (typeof selectedCategory === 'string'
+            ? "General"
+            : (selectedCategory?.subCategory || rawCategoryName || "General")),
         // Swap out dummy logic with our permanently uploaded Cloudinary URLs
         images: uploadedUrls,
         price: parseFloat(mobilePrice || monthlyRent || "0") || 0,
@@ -168,6 +172,8 @@ export default function FormSidebar({
 
       // Add any additional category details
       if (categoryDetails) {
+        adData.categorySpecificData = categoryDetails;
+
         const categoryName = rawCategoryName;
         const categoryKeyMap = {
           Education: "educationData",
