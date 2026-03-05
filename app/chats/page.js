@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import {
+  deleteConversation,
   getConversationMessages,
   getMyConversations,
   sendConversationMessage,
@@ -308,6 +309,25 @@ function ChatsPageContent() {
     }
   };
 
+  const handleDeleteConversation = async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+
+      setConversations((prev) => {
+        const updated = prev.filter((conversation) => conversation.id !== conversationId);
+
+        if (selectedConversationIdRef.current === conversationId) {
+          setSelectedConversation(updated[0] || null);
+          setMessages([]);
+        }
+
+        return updated;
+      });
+    } catch (error) {
+      setPageError(error?.data?.message || error.message || "Failed to delete conversation.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
 
@@ -323,6 +343,7 @@ function ChatsPageContent() {
             conversations={conversations}
             selectedId={selectedConversationId}
             onSelectConversation={setSelectedConversation}
+            onDeleteConversation={handleDeleteConversation}
             loading={loadingConversations}
           />
         </aside>

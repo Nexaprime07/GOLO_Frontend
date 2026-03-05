@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { MoreVertical, Trash2 } from "lucide-react";
+
 const formatTime = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -17,7 +20,15 @@ const getAvatarUrl = (avatar, name) => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=157A4F&color=ffffff&size=128`;
 };
 
-export default function ChatSidebar({ conversations = [], selectedId, onSelectConversation, loading = false }) {
+export default function ChatSidebar({
+  conversations = [],
+  selectedId,
+  onSelectConversation,
+  onDeleteConversation,
+  loading = false,
+}) {
+  const [openMenuId, setOpenMenuId] = useState(null);
+
   return (
     <div className="flex flex-col h-full">
 
@@ -80,6 +91,30 @@ export default function ChatSidebar({ conversations = [], selectedId, onSelectCo
 
             <div className="text-right">
               <p className="text-xs text-gray-400">{formatTime(chat.lastMessageAt)}</p>
+              <div className="relative mt-2">
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setOpenMenuId((prev) => (prev === chat.id ? null : chat.id));
+                  }}
+                  className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
+                >
+                  <MoreVertical size={16} />
+                </button>
+
+                {openMenuId === chat.id && (
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setOpenMenuId(null);
+                      onDeleteConversation?.(chat.id);
+                    }}
+                    className="absolute right-0 top-8 z-10 bg-white border border-gray-200 shadow-md rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-1"
+                  >
+                    <Trash2 size={12} /> Delete chat
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}

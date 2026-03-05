@@ -432,3 +432,9 @@ export async function sendConversationMessage(conversationId, text, adId) {
         body: JSON.stringify({ text, adId }),
     });
 }
+
+export async function deleteConversation(conversationId) {
+    return apiClient(`/chats/conversations/${conversationId}`, {
+        method: 'DELETE',
+    });
+}

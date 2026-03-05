@@ -81,6 +81,34 @@ export default function ChatWindow({
       {/* SCROLLABLE MESSAGES AREA */}
       <div className="flex-1 overflow-y-auto px-10 py-8 space-y-6">
 
+        {(conversation?.ad?.title || conversation?.lastMessageAdTitle) && (
+          <div className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 shadow-sm">
+            {conversation?.ad?.image ? (
+              <img
+                src={conversation.ad.image}
+                alt={conversation?.ad?.title || conversation?.lastMessageAdTitle || "Ad"}
+                className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+                Ad
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Chat about this ad</p>
+              <p className="text-sm font-semibold text-gray-800 truncate">
+                {conversation?.lastMessageAdTitle || conversation?.ad?.title}
+              </p>
+              <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
+                {conversation?.ad?.price !== undefined && conversation?.ad?.price !== null && (
+                  <span className="font-semibold text-[#157A4F]">₹{Number(conversation.ad.price).toLocaleString("en-IN")}</span>
+                )}
+                {conversation?.ad?.location && <span className="truncate">{conversation.ad.location}</span>}
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading && (
           <div className="text-sm text-gray-500">Loading messages...</div>
         )}
