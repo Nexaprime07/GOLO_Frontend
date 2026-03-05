@@ -14,7 +14,6 @@ import {
   Star,
   Phone,
   MessageCircle,
-  ShieldCheck,
   Loader2,
 } from "lucide-react";
 
@@ -36,6 +35,15 @@ export default function ProductDetails({ params }) {
     "/images/listing4.webp",
   ];
 
+  const getSafeImageSrc = (value) => {
+    if (!value || typeof value !== "string") return "/images/placeholder.webp";
+    const src = value.trim();
+    if (!src) return "/images/placeholder.webp";
+    if (src.startsWith("/")) return src;
+    if (src.startsWith("http://") || src.startsWith("https://")) return src;
+    return "/images/placeholder.webp";
+  };
+
   useEffect(() => {
     async function fetchAd() {
       if (!adId) return;
@@ -56,7 +64,7 @@ export default function ProductDetails({ params }) {
     fetchAd();
   }, [adId]);
 
-  const images = ad?.images?.length > 0 ? ad.images : fallbackImages;
+  const images = ad?.images?.length > 0 ? ad.images.map(getSafeImageSrc) : fallbackImages;
   const isExternalImage = ad?.images?.length > 0;
 
   const formatFieldLabel = (key) =>
@@ -103,28 +111,24 @@ export default function ProductDetails({ params }) {
     return String(value);
   };
 
+  const hasDisplayValue = (value) => {
+    if (value === null || value === undefined) return false;
+    if (typeof value === "string") return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === "object") return Object.keys(value).length > 0;
+    return true;
+  };
+
   const basicInformationEntries = [
     ["Title", ad?.title],
     ["Description", ad?.description],
     ["Category", ad?.category],
     ["Sub Category", ad?.subCategory],
-    ["Price", ad?.price !== undefined && ad?.price !== null ? `₹${Number(ad.price).toLocaleString("en-IN")}` : "-"],
-    ["Negotiable", ad?.negotiable],
     ["Primary Contact", ad?.primaryContact || ad?.contactInfo?.phone],
-    ["Contact Name", ad?.contactInfo?.name],
-    ["Contact Email", ad?.contactInfo?.email],
-    ["Contact WhatsApp", ad?.contactInfo?.whatsapp],
-    ["Preferred Contact Method", ad?.contactInfo?.preferredContactMethod],
-    ["Location", ad?.location],
     ["City", ad?.city],
-    ["State", ad?.state],
-    ["Pincode", ad?.pincode],
     ["All Cities", ad?.cities],
-    ["Language", ad?.language],
-    ["Template", ad?.templateId],
-    ["Selected Dates", ad?.selectedDates],
-    ["Tags", ad?.tags],
-  ];
+    ["Location", ad?.location],
+  ].filter(([, value]) => hasDisplayValue(value));
 
   const categoryDataSource =
     ad?.categorySpecificData ||
@@ -150,7 +154,7 @@ export default function ProductDetails({ params }) {
 
   const categorySpecificEntries = categoryDataSource
     ? Object.entries(categoryDataSource).filter(
-      ([key, value]) => !["_id", "__v"].includes(key) && value !== null && value !== undefined && value !== ""
+      ([key, value]) => !["_id", "__v"].includes(key) && hasDisplayValue(value)
     )
     : [];
 
@@ -299,43 +303,20 @@ export default function ProductDetails({ params }) {
                 </span>
               </div>
 
-              {/* Description Card */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm mt-8 border border-gray-200">
-                <h2 className="font-semibold text-lg mb-4">
-                  Detailed Description
-                </h2>
-
-                <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                  {ad?.description || "No description available."}
-                </p>
-
-                {/* Tags */}
-                {ad?.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {ad.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full"
-                      >
-                        {tag}
-                      </span>
+              {/* Category Specific Details */}
+              {basicInformationEntries.length > 0 && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
+                  <h2 className="font-semibold text-lg mb-4">Basic Information</h2>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {basicInformationEntries.map(([label, value]) => (
+                      <div key={label} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                        <p className="text-xs text-gray-500 mb-1">{label}</p>
+                        <p className="text-sm font-medium text-gray-800 break-words">{stringifyValue(value)}</p>
+                      </div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Category Specific Details */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
-                <h2 className="font-semibold text-lg mb-4">Basic Information</h2>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {basicInformationEntries.map(([label, value]) => (
-                    <div key={label} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
-                      <p className="text-xs text-gray-500 mb-1">{label}</p>
-                      <p className="text-sm font-medium text-gray-800 break-words">{stringifyValue(value)}</p>
-                    </div>
-                  ))}
                 </div>
-              </div>
+              )}
 
               <div className="bg-white p-6 rounded-2xl shadow-sm mt-6 border border-gray-200">
                 <h2 className="font-semibold text-lg mb-4">
@@ -392,47 +373,6 @@ export default function ProductDetails({ params }) {
                     <Phone size={18} />
                     Call for Details
                   </button>
-                </div>
-
-                {/* Contact Info Card */}
-                {ad?.contactInfo && (
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                    <h3 className="font-semibold mb-3">Contact Information</h3>
-                    {ad.contactInfo.phone && (
-                      <p className="text-sm text-gray-600">📞 {ad.contactInfo.phone}</p>
-                    )}
-                    {ad.contactInfo.email && (
-                      <p className="text-sm text-gray-600 mt-1">✉️ {ad.contactInfo.email}</p>
-                    )}
-                    {ad.contactInfo.whatsapp && (
-                      <p className="text-sm text-gray-600 mt-1">💬 {ad.contactInfo.whatsapp}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Location Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MapPin size={18} className="text-[#157A4F]" />
-                    <h3 className="font-semibold">Location</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">{ad?.location}</p>
-                  {ad?.city && <p className="text-sm text-gray-500">{ad.city}, {ad.state}</p>}
-                  {ad?.pincode && <p className="text-sm text-gray-500">PIN: {ad.pincode}</p>}
-                </div>
-
-                {/* Safety Tips */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ShieldCheck size={18} className="text-[#157A4F]" />
-                    <p className="font-semibold">Safety Tips</p>
-                  </div>
-
-                  <ul className="text-sm text-gray-600 space-y-2">
-                    <li>• Meet in a public location</li>
-                    <li>• Inspect the product before paying</li>
-                    <li>• Avoid making advance payments</li>
-                  </ul>
                 </div>
 
               </div>

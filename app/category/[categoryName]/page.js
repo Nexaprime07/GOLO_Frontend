@@ -67,6 +67,15 @@ function assignBentoLayout(adsList) {
     });
 }
 
+function getSafeImageSrc(value) {
+    if (!value || typeof value !== "string") return "/images/placeholder.webp";
+    const src = value.trim();
+    if (!src) return "/images/placeholder.webp";
+    if (src.startsWith("/")) return src;
+    if (src.startsWith("http://") || src.startsWith("https://")) return src;
+    return "/images/placeholder.webp";
+}
+
 export default function CategoryPage() {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -273,7 +282,7 @@ export default function CategoryPage() {
 function MultiImageAd({ ad, className }) {
     const router = useRouter();
     const images = ad.images && ad.images.length > 0
-        ? ad.images
+        ? ad.images.map(getSafeImageSrc)
         : ["/images/placeholder.webp", "/images/placeholder.webp", "/images/placeholder.webp"];
     const [current, setCurrent] = useState(0);
 
@@ -295,6 +304,7 @@ function MultiImageAd({ ad, className }) {
                     src={img}
                     alt={ad.title || "Ad"}
                     fill
+                    unoptimized
                     className={`object-cover transition-opacity duration-1000 ${index === current ? "opacity-100" : "opacity-0"
                         }`}
                 />
@@ -340,7 +350,7 @@ function MultiImageAd({ ad, className }) {
 
 function SingleImageAd({ ad, className }) {
     const router = useRouter();
-    const image = ad.images && ad.images[0] ? ad.images[0] : "/images/placeholder.webp";
+    const image = ad.images && ad.images[0] ? getSafeImageSrc(ad.images[0]) : "/images/placeholder.webp";
 
     return (
         <div
@@ -351,6 +361,7 @@ function SingleImageAd({ ad, className }) {
                 src={image}
                 alt={ad.title || "Ad"}
                 fill
+                unoptimized
                 className="object-cover group-hover:scale-105 transition duration-500"
             />
 
