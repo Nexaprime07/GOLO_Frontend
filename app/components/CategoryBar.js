@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown, Grid } from "lucide-react";
 import { createPortal } from "react-dom";
 
@@ -44,7 +43,6 @@ export default function CategoryBar() {
 
   const buttonRefs = useRef({});
   const wrapperRef = useRef(null);
-  const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -61,7 +59,11 @@ export default function CategoryBar() {
     const url = sub
       ? `/category/${encoded}?sub=${encodeURIComponent(sub)}`
       : `/category/${encoded}`;
-    router.push(url);
+
+    if (typeof window !== "undefined") {
+      window.location.assign(url);
+    }
+
     setActiveDropdown(null);
     setShowAllModal(false);
   };

@@ -405,3 +405,30 @@ export async function openRazorpayCheckout({ amount, adId, description, notes, p
         razorpay.open();
     });
 }
+
+// ============================================================
+// CHATS APIs
+// ============================================================
+
+export async function startConversation({ adId, sellerId }) {
+    return apiClient('/chats/start', {
+        method: 'POST',
+        body: JSON.stringify({ adId, sellerId }),
+    });
+}
+
+export async function getMyConversations() {
+    return apiClient('/chats/conversations');
+}
+
+export async function getConversationMessages(conversationId, { page = 1, limit = 50 } = {}) {
+    const params = new URLSearchParams({ page, limit });
+    return apiClient(`/chats/conversations/${conversationId}/messages?${params.toString()}`);
+}
+
+export async function sendConversationMessage(conversationId, text) {
+    return apiClient(`/chats/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+    });
+}

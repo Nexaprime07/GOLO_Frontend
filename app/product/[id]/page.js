@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Navbar from "./../../components/Navbar";
 import Footer from "./../../components/Footer";
 import Recommended from "@/app/components/Recommended";
@@ -20,6 +21,7 @@ import {
 export default function ProductDetails({ params }) {
   const resolvedParams = use(params);
   const adId = resolvedParams.id;
+  const router = useRouter();
 
   const [ad, setAd] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -287,7 +289,10 @@ export default function ProductDetails({ params }) {
                     ₹{ad?.price?.toLocaleString() || "0"}
                   </h2>
 
-                  <button className="w-full mt-6 py-3 rounded-xl bg-[#157A4F] hover:bg-[#0f5c3a] text-white font-semibold flex items-center justify-center gap-2 transition">
+                  <button
+                    onClick={() => router.push(`/chats?adId=${ad?.adId || ad?._id || adId}&sellerId=${ad?.userId || ''}`)}
+                    className="w-full mt-6 py-3 rounded-xl bg-[#157A4F] hover:bg-[#0f5c3a] text-white font-semibold flex items-center justify-center gap-2 transition"
+                  >
                     <MessageCircle size={18} />
                     Chat with Seller
                   </button>

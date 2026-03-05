@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AdTemplateCard({ ad, isBento = false }) {
+    const router = useRouter();
     const [imgIdx, setImgIdx] = useState(0);
     const [imgError, setImgError] = useState(false);
 
@@ -21,6 +23,7 @@ export default function AdTemplateCard({ ad, isBento = false }) {
 
     const { adId, _id, title, price, description, images = [], templateId = 2 } = ad;
     const linkId = adId || _id;
+    const sellerId = ad?.userId || "";
 
     const validImages = (images || []).filter(img => img && !img.includes("placehold.co"));
     const hasImages = validImages.length > 0 && !imgError;
@@ -36,7 +39,11 @@ export default function AdTemplateCard({ ad, isBento = false }) {
     const ButtonGroup = () => (
         <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
             <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); console.log("Chat clicked"); }}
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push(`/chats?adId=${linkId}&sellerId=${sellerId}`);
+                }}
                 style={{
                     background: "#157A4F", color: "#fff", border: "none", borderRadius: "8px",
                     padding: "8px 24px", fontWeight: 600, fontSize: "14px", cursor: "pointer",

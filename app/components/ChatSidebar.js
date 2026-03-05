@@ -1,26 +1,23 @@
 "use client";
 
-import Image from "next/image";
+const formatTime = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
-const chats = [
-  {
-    name: "Priya Sharma",
-    message: "Sure, I can meet you",
-    time: "10:30 AM",
-    unread: 2,
-    img: "/images/user1.jpg",
-    active: true,
-  },
-  {
-    name: "Amit Singh",
-    message: "Got it. Will check the details.",
-    time: "Yesterday",
-    unread: 0,
-    img: "/images/user2.jpg",
-  },
-];
+const getAvatarUrl = (avatar, name) => {
+  if (avatar && String(avatar).trim()) return avatar;
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=157A4F&color=ffffff&size=128`;
+};
 
-export default function ChatSidebar() {
+export default function ChatSidebar({ conversations = [], selectedId, onSelectConversation, loading = false }) {
   return (
     <div className="flex flex-col h-full">
 
@@ -34,43 +31,55 @@ export default function ChatSidebar() {
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
 
-        {chats.map((chat, i) => (
+        {!loading && conversations.length === 0 && (
+          <div className="text-sm text-gray-500 text-center py-8">
+            No conversations yet. Start from an ad card chat button.
+          </div>
+        )}
+
+        {loading && (
+          <div className="text-sm text-gray-500 text-center py-8">
+            Loading conversations...
+          </div>
+        )}
+
+        {conversations.map((chat) => (
           <div
-            key={i}
+            key={chat.id}
+            onClick={() => onSelectConversation?.(chat)}
             className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300
             ${
-              chat.active
+              selectedId === chat.id
                 ? "bg-[#FFF3D6] border border-[#F5B849]"
                 : "hover:bg-gray-50"
             }`}
           >
             <div className="flex items-center gap-3">
-              <Image
-                src={chat.img}
+              <img
+                src={getAvatarUrl(chat?.otherUser?.avatar, chat?.otherUser?.name)}
                 width={45}
                 height={45}
-                alt={chat.name}
+                alt={chat?.otherUser?.name || "User"}
                 className="rounded-full object-cover"
               />
 
               <div>
                 <p className="font-semibold text-gray-800">
-                  {chat.name}
+                  {chat?.otherUser?.name || "Unknown User"}
                 </p>
                 <p className="text-sm text-gray-500 truncate w-[160px]">
-                  {chat.message}
+                  {chat.lastMessageText || "No messages yet"}
                 </p>
+                {chat?.ad?.title && (
+                  <p className="text-xs text-gray-400 truncate w-[160px] mt-0.5">
+                    {chat.ad.title}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-xs text-gray-400">{chat.time}</p>
-
-              {chat.unread > 0 && (
-                <div className="bg-[#157A4F] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full mt-2 ml-auto">
-                  {chat.unread}
-                </div>
-              )}
+              <p className="text-xs text-gray-400">{formatTime(chat.lastMessageAt)}</p>
             </div>
           </div>
         ))}

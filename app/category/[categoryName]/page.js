@@ -308,7 +308,10 @@ function MultiImageAd({ ad, className }) {
                 <p className="mt-4 text-2xl font-bold text-yellow-400">{ad.price}</p>
                 <div className="flex gap-3 mt-4">
                     <button
-                        onClick={(e) => { e.stopPropagation(); router.push("/chats"); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/chats?adId=${ad.adId || ad._id}&sellerId=${ad.userId || ''}`);
+                        }}
                         className="px-4 py-2 text-sm rounded-xl theme-button-accent"
                     >
                         Chat
@@ -358,7 +361,10 @@ function SingleImageAd({ ad, className }) {
                 <p className="text-lg font-bold text-yellow-400 mt-1">{ad.price}</p>
                 <div className="flex gap-2 mt-3">
                     <button
-                        onClick={(e) => { e.stopPropagation(); router.push("/chats"); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/chats?adId=${ad.adId || ad._id}&sellerId=${ad.userId || ''}`);
+                        }}
                         className="flex-1 py-2 text-xs rounded-lg theme-button-accent"
                     >
                         Chat
@@ -390,7 +396,10 @@ function TextAd({ ad, className }) {
             </div>
             <div className="flex gap-2 mt-4">
                 <button
-                    onClick={(e) => { e.stopPropagation(); router.push("/chats"); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/chats?adId=${ad.adId || ad._id}&sellerId=${ad.userId || ''}`);
+                    }}
                     className="flex-1 py-2 text-xs rounded-lg theme-button-accent"
                 >
                     Chat
